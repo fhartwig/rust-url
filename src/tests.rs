@@ -6,7 +6,6 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-
 use std::char;
 use std::num::from_str_radix;
 use super::{UrlParser, Url, SchemeData, RelativeSchemeData, Host};
@@ -214,7 +213,7 @@ fn new_file_paths() {
         let mut url = Url::from_file_path(Path::new("/foo/bar")).unwrap();
         assert_eq!(url.host(), Some(&Host::Domain("".to_string())));
         assert_eq!(url.path(), Some(&["foo".to_string(), "bar".to_string()][..]));
-        assert!(url.to_file_path() == Ok(PathBuf::new("/foo/bar")));
+        assert!(url.to_file_path() == Ok(PathBuf::from("/foo/bar")));
 
         url.path_mut().unwrap()[1] = "ba\0r".to_string();
         url.to_file_path().is_ok();
@@ -233,7 +232,7 @@ fn new_path_bad_utf8() {
 
     let url = Url::from_file_path(Path::new("/foo/ba%80r")).unwrap();
     let os_str = <OsStr as OsStrExt>::from_bytes(b"/foo/ba\x80r");
-    assert_eq!(url.to_file_path(), Ok(PathBuf::new(&os_str)));
+    assert_eq!(url.to_file_path(), Ok(PathBuf::from(os_str)));
 }
 
 #[test]

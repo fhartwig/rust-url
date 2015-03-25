@@ -119,16 +119,16 @@ assert!(css_url.serialize() == "http://servo.github.io/rust-url/main.css".to_str
 */
 
 
-#![feature(core, std_misc)]
+#![feature(convert, core, std_misc)]
 
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 
 #[macro_use]
 extern crate matches;
 
 use std::fmt::{self, Formatter};
 use std::hash;
-use std::path::{Path, PathBuf, AsPath};
+use std::path::{Path, PathBuf};
 
 pub use host::{Host, Ipv6Address};
 pub use parser::{ErrorHandler, ParseResult, ParseError};
@@ -479,8 +479,8 @@ impl Url {
     ///
     /// This returns `Err` if the given path is not absolute
     /// or, with a Windows path, if the prefix is not a disk prefix (e.g. `C:`).
-    pub fn from_file_path<P: AsPath>(path: P) -> Result<Url, ()> {
-        let path = try!(path_to_file_url_path(path.as_path()));
+    pub fn from_file_path<P: AsRef<Path>>(path: P) -> Result<Url, ()> {
+        let path = try!(path_to_file_url_path(path.as_ref()));
         Ok(Url::from_path_common(path))
     }
 
@@ -501,8 +501,8 @@ impl Url {
     ///   as the base URL is `file:///var/index.html`, which might not be what was intended.
     ///
     /// (Note that `Path::new` removes any trailing slash.)
-    pub fn from_directory_path<P: AsPath>(path: P) -> Result<Url, ()> {
-        let mut path = try!(path_to_file_url_path(path.as_path()));
+    pub fn from_directory_path<P: AsRef<Path>>(path: P) -> Result<Url, ()> {
+        let mut path = try!(path_to_file_url_path(path.as_ref()));
         // Add an empty path component (i.e. a trailing slash in serialization)
         // so that the entire path is used as a base URL.
         path.push("".to_string());
@@ -974,7 +974,7 @@ fn file_url_path_to_pathbuf(path: &[String]) -> Result<PathBuf, ()> {
     use std::path::PathBuf;
 
     if path.is_empty() {
-        return Ok(PathBuf::new("/"))
+        return Ok(PathBuf::from("/"))
     }
     let mut bytes = Vec::new();
     for path_part in path.iter() {
@@ -982,7 +982,7 @@ fn file_url_path_to_pathbuf(path: &[String]) -> Result<PathBuf, ()> {
         percent_decode_to(path_part.as_bytes(), &mut bytes);
     }
     let os_str = <OsStr as OsStrExt>::from_bytes(&bytes);
-    let path = PathBuf::new(&os_str);
+    let path = PathBuf::from(os_str);
     debug_assert!(path.is_absolute(),
                   "to_file_path() failed to produce an absolute Path");
     Ok(path)
